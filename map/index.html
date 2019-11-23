@@ -21,6 +21,9 @@ html {
 h1 {
     margin: 0.4em 0;
 }
+ul {
+    padding-left: 20px;
+}
 #map-container {
     height: 500px;
     max-height: 72vh;
@@ -32,12 +35,13 @@ h1 {
     cursor: pointer;
 }
 #text-list {
-    max-width: 400px;
+    max-width: 600px;
     margin: 0.5em auto;
     text-align: left;
-}
-.leaflet-popup-content ul {
-    padding-left: 20px;
+    border: #7a7 0.1em solid;
+    border-radius: 2em;
+    background: rgba(255,255,255,0.2);
+    padding: 0.8em 1.5em;
 }
 .marker-gray {
     filter: grayscale(1) brightness(1.5);
@@ -326,7 +330,7 @@ let places = [
         items: [
             {title: 'Энергосберегающие (ртутные) лампы, батарейки, градусники'},
         ],
-        comment: '<a target="_blank" href="https://ecobox.ru/product-category/energolamp/">Подробнее</a>',
+        comment: '<a target="_blank" href="https://ecobox.ru/product-category/energolamp/">Подробнее про контейнер</a>',
         type: 'orange',
     },
     
