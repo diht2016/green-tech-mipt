@@ -5,6 +5,9 @@
 <title>Карта пунктов приёма вторсырья МФТИ</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#c0deab">
+<meta property="og:title" content="Карта пунктов приёма вторсырья МФТИ">
+<meta property="og:image" content="https://i.imgur.com/MbtLPHc.png">
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
  integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
  crossorigin=""/>
@@ -46,7 +49,7 @@ ul {
 .marker-gray {
     filter: grayscale(1) brightness(1.5);
 }
-.marker-little-gray {
+.marker-blue-gray {
     filter: grayscale(0.5);
 }
 .marker-orange {
@@ -55,7 +58,7 @@ ul {
 .marker-green {
     filter: hue-rotate(240deg);
 }
-.marker-little-green {
+.marker-light-green {
     filter: hue-rotate(240deg) grayscale(0.5) brightness(1.5);
 }
 </style>
@@ -66,7 +69,7 @@ ul {
 &bullet;
 <a href="https://github.com/diht2016/green-tech-mipt/issues" target="_blank">Обратная связь по карте</a>
 &bullet;
-Актуально на 2019.11.23
+Актуально на 2019.11.24
 <div id="map-container"></div>
 <button id="text-button" onclick="textList.hidden = !textList.hidden">Перечислить все пункты</button>
 <div id="text-list" hidden>...</div>
@@ -97,8 +100,8 @@ let places = [
                 info: '1 этаж, боталка (справа после турникета), коробка справа под книжной полкой'
             },
         ],
-        type: 'little-gray',
         comment: 'Планируется установить пункты сбора в ближайшее время (ориентировочно - в декабре 2019)',
+        type: 'blue-gray',
     },
     {
         id: '2',
@@ -117,7 +120,7 @@ let places = [
                 info: 'в обоих пунктах (описанных выше) рядом стоит пятилитровка для них'
             },
         ],
-        type: 'normal',
+        type: 'blue',
     },
     {
         id: '3',
@@ -128,7 +131,7 @@ let places = [
                 info: '3 этаж, боталка'
             },
         ],
-        type: 'little-gray',
+        type: 'blue-gray',
     },
     {
         id: '4',
@@ -154,7 +157,7 @@ let places = [
                 info: 'пятилитровки рядом с пунктами сбора пластиковых бутылок'
             },
         ],
-        type: 'normal',
+        type: 'blue',
    },
     {
         id: '7',
@@ -173,7 +176,7 @@ let places = [
                 info: 'пятилитровка в громкой боталке, 1 этаж'
             },
         ],
-        type: 'normal',
+        type: 'blue',
     },
     {
         id: '8',
@@ -192,24 +195,19 @@ let places = [
                 info: 'пятилитровки рядом с пунктами сбора пластиковых бутылок'
             },
         ],
-        type: 'normal',
+        type: 'blue',
     },
     {
         id: '9',
         coords: [55.92728, 37.52359],
-        comment: 'Пунктов сбора в общежитии нет, но поблизости есть синие контейнеры',
+        comment: 'Пунктов сбора в общежитии нет (так как оно квартирного типа), но рядом есть синие контейнеры',
         type: 'gray',
     },
     {
-        id: '10',
-        coords: [55.93009, 37.52267],
-        comment: 'Пунктов сбора в общежитии нет, так как оно квартирного типа',
-        type: 'gray',
-    },
-    {
-        id: '11',
-        coords: [55.93067, 37.52243],
-        comment: 'Пунктов сбора в общежитии нет, так как оно квартирного типа',
+        id: '10and11',
+        name: 'Общежития №10 и №11',
+        coords: [55.93038, 37.52255],
+        comment: 'Пунктов сбора в этих общежитиях нет (так как они квартирного типа), но неподалёку находится основной пункт приёма вторсырья (за 4-ым общежитием)',
         type: 'gray',
     },
     {
@@ -259,7 +257,7 @@ let places = [
             },
             {
                 title: 'Макулатура',
-                info: 'за домиком есть окошко, в которое можно сдать макулатуру (если не влезает - можно положить у окошка рядом)'
+                info: 'с задней стороны домика есть окошко, в которое можно сдать макулатуру (если не влезает - можно положить у окошка рядом)'
             },
         ],
         type: 'green',
@@ -274,7 +272,7 @@ let places = [
             {title: 'Картонные коробки'},
             {title: 'Стеклянные бутылки и банки'},
         ],
-        type: 'little-green',
+        type: 'light-green',
     },
     {
         id: 'bluebox9',
@@ -286,7 +284,7 @@ let places = [
             {title: 'Картонные коробки'},
             {title: 'Стеклянные бутылки и банки'},
         ],
-        type: 'little-green',
+        type: 'light-green',
     },
     {
         id: 'bluebox12',
@@ -298,7 +296,7 @@ let places = [
             {title: 'Картонные коробки'},
             {title: 'Стеклянные бутылки и банки'},
         ],
-        type: 'little-green',
+        type: 'light-green',
     },
     {
         id: 'petbox12',
@@ -307,7 +305,7 @@ let places = [
         items: [
             {title: 'Пластиковые бутылки и канистры'},
         ],
-        type: 'little-green',
+        type: 'light-green',
     },
 
     {
