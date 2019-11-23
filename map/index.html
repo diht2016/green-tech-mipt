@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Карта пунктов приёма вторсырья МФТИ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+ integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+ crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+ integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+ crossorigin=""></script>
+<style>
+html {
+    background: #c0deab;
+    color: #030;
+    text-align: center;
+    font-family: sans-serif;
+}
+#map-container {
+    height: 500px;
+    max-height: 72vh;
+    max-width: 750px;
+    margin: 0.5em auto;
+    border: #7a7 0.2em solid;
+}
+#text-button {
+    cursor: pointer;
+    text-decoration: underline dashed;
+}
+#text-list {
+    max-width: 400px;
+    margin: 0.5em auto;
+    text-align: left;
+}
+.leaflet-popup-content ul {
+    padding-left: 20px;
+}
+.marker-gray {
+    filter: grayscale(1) brightness(1.5);
+}
+.marker-little-gray {
+    filter: grayscale(0.5);
+}
+.marker-orange {
+    filter: hue-rotate(180deg);
+}
+.marker-green {
+    filter: hue-rotate(240deg);
+}
+.marker-little-green {
+    filter: hue-rotate(240deg) grayscale(0.5) brightness(1.5);
+}
+</style>
+</head>
+<body>
+<h1>Карта пунктов приёма вторсырья МФТИ</h1>
+<div id="map-container"></div>
+<h2 id="text-button" onclick="textList.hidden = !textList.hidden">Показать по всем общежитиям</h2>
+<div id="text-list" hidden>...</div>
+<script>
+let textList = document.getElementById('text-list')
+
+// util functions
+let wrap = (content, tagName) => '<' + tagName + '>' + content + '</' + tagName + '>'
+let capitalize = (str) => str[0].toUpperCase() + str.slice(1)
+
+
+// json database
+let global = {
+    coords: [55.93001, 37.52146],
+    minZoom: 14,
+    zoom: 16,
+    maxZoom: 19,
+}
+
+let places = [
+    {
+        id: '1',
+        coords: [55.93088, 37.52158],
+        comment: 'Планируется установить пункты сбора в ближайшее время (ориентировочно - в декабре 2019)',
+        type: 'gray',
+    },
+    {
+        id: '2',
+        coords: [55.93016, 37.52193],
+        items: [
+            {
+                title: 'Макулатура',
+                info: '1 этаж, боталка (справа до турникета), коробки сбоку'
+            },
+            {
+                title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
+                info: '3 этаж, южная кухня, контейнер и на окне пятилитровка для крышек'
+            },
+            {
+                title: 'Ручки, маркеры, фломастеры, зубные щётки',
+                info: 'в обоих пунктах (описанных выше) рядом стоит пятилитровка для них'
+            },
+        ],
+        type: 'normal',
+    },
+    {
+        id: '3',
+        coords: [55.92929, 37.52247],
+        items: [
+            {
+                title: 'Макулатура',
+                info: '3 этаж, боталка'
+            },
+        ],
+        type: 'little-gray',
+    },
+    {
+        id: '4',
+        coords: [55.93108, 37.52293],
+        items: null,
+        comment: 'Пунктов сбора пока что нет. Тем не менее, рядом с общежитием есть главный пункт приёма, куда можно сдать пластиковые бутылки и макулатуру.',
+        type: 'gray',
+    },
+    {
+        id: '6',
+        coords: [55.92948, 37.52373],
+        items: [
+            {
+                title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
+                info: 'все этажи кроме первого, умывалка'
+            },
+            {
+                title: 'Макулатура',
+                info: '3 этаж, боталка, коробки на книжном шкафу'
+            },
+            {
+                title: 'Ручки, маркеры, фломастеры, зубные щётки',
+                info: 'пятилитровки рядом с пунктами сбора пластиковых бутылок'
+            },
+        ],
+        type: 'normal',
+   },
+    {
+        id: '7',
+        coords: [55.92892, 37.52329],
+        items: [
+            {
+                title: 'Пластиковые бутылки и канистры, алюминиевые банки',
+                info: '3 этаж, южная кухня'
+            },
+        ],
+        type: 'little-gray',
+    },
+    {
+        id: '8',
+        coords: [55.92812, 37.52351],
+        items: [
+            {
+                title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
+                info: '3, 5, 7 этажи, северное крыло, комнатки с мусоропроводом'
+            },
+            {
+                title: 'Макулатура',
+                info: '3 этаж, белый контейнер у пункта сбора пластика'
+            },
+            {
+                title: 'Ручки, маркеры, фломастеры, зубные щётки',
+                info: 'пятилитровки рядом с пунктами сбора пластиковых бутылок'
+            },
+        ],
+        type: 'normal',
+    },
+    {
+        id: '12',
+        coords: [55.93161, 37.51890],
+        comment: 'Пункт сбора пластика есть у ворот, были мысли установить на 1 этаже пункт сбора макулатуры',
+        type: 'gray',
+    },
+
+    {
+        id: 'kpm',
+        name: 'КПМ',
+        coords: [55.92899, 37.52141],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, у входа в МФТИ-телеком, а также 2 этаж, у входа в столовую'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'hall',
+        name: 'Концерт-зал',
+        coords: [55.92972, 37.51752],
+        items: [
+            {
+                title: 'Батарейки',
+                info: 'главный вход, в промежутке между дверями'
+            },
+        ],
+        type: 'orange',
+    },
+
+    {
+        id: 'mainpoint',
+        name: 'Основной пункт приёма вторсырья',
+        coords: [55.93140, 37.52331],
+        items: [
+            {
+                title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
+                info: 'контейнер-клетка перед домиком'
+            },
+            {
+                title: 'Макулатура',
+                info: 'за домиком есть окошко, в которое можно сдать макулатуру (если не влезает - можно положить у окошка рядом)'
+            },
+        ],
+        type: 'green',
+    },
+    {
+        id: 'bluebox8',
+        name: 'Синий контейнер',
+        coords: [55.92768, 37.52382],
+        items: [
+            {title: 'Пластиковые бутылки и канистры'},
+            {title: 'Алюминий и железо'},
+            {title: 'Картонные коробки'},
+            {title: 'Стеклянные бутылки и банки'},
+        ],
+        type: 'little-green',
+    },
+    {
+        id: 'bluebox9',
+        name: 'Синий контейнер',
+        coords: [55.92699, 37.52419],
+        items: [
+            {title: 'Пластиковые бутылки и канистры'},
+            {title: 'Алюминий и железо'},
+            {title: 'Картонные коробки'},
+            {title: 'Стеклянные бутылки и банки'},
+        ],
+        type: 'little-green',
+    },
+    {
+        id: 'bluebox12',
+        name: 'Синий контейнер',
+        coords: [55.93215, 37.51930],
+        items: [
+            {title: 'Пластиковые бутылки и канистры'},
+            {title: 'Алюминий и железо'},
+            {title: 'Картонные коробки'},
+            {title: 'Стеклянные бутылки и банки'},
+        ],
+        type: 'little-green',
+    },
+    {
+        id: 'petbox12',
+        name: 'Контейнер-клетка',
+        coords: [55.93219, 37.51935],
+        items: [
+            {title: 'Пластиковые бутылки и канистры'},
+        ],
+        type: 'little-green',
+    },
+
+    {
+        id: 'vkusvill',
+        name: 'ВкусВилл',
+        coords: [55.93960, 37.51709],
+        items: [
+            {
+                title: 'Батарейки',
+                info: 'внутри у входа на столе стоит контейнер'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'mercurybox',
+        name: 'Оранжевый контейнер',
+        coords: [55.93433, 37.51406],
+        items: [
+            {title: 'Ртутные лампы, батарейки, градусники'},
+        ],
+        type: 'orange',
+    },
+    
+]
+
+// data completion
+for (let p of places) {
+    if (p.id.match(/^\d+$/) && !p.name) {
+        p.name = 'Общежитие №' + p.id
+    }
+}
+
+
+// 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
+// id: 'mapbox.streets',
+// accessToken: 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
+
+function createMap(elementId) {
+    let map = L.map(elementId).setView(global.coords, global.zoom)
+
+    L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+        maxZoom: global.maxZoom,
+        minZoom: global.minZoom,
+    }).addTo(map)
+
+    let textListHTML = ''
+    
+    for (let p of places) {
+        let marker = L.marker(p.coords, {
+            alt: p.name,
+        }).addTo(map)
+        
+        let content = wrap(p.name + ':', 'h3')
+        if (p.items) {
+            content += wrap(p.items.map(item => wrap(wrap(item.title, 'b') + (item.info ? ': ' + item.info : ''), 'li')).join(''), 'ul')
+        }
+        if (p.comment) {
+            content += wrap(p.comment, 'p')
+        }
+        
+        if (p.id.match(/^\d+$/)) {
+            textListHTML += content
+        }
+
+        let popup = L.popup()
+            .setLatLng(p.coords)
+            .setContent(content)
+        
+        marker.addEventListener('click', () => popup.openOn(map))
+        marker.bindTooltip(p.name)
+        marker._icon.classList.add('marker-' + p.type)
+    }
+    
+    textList.innerHTML = textListHTML
+    
+    return map
+}
+
+createMap('map-container')
+
+</script>
+</body>
+</html>
