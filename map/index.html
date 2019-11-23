@@ -61,8 +61,10 @@ h1 {
 <a href="https://vk.com/green_tech_mipt" target="_blank">Связаться с нами</a>
 &bullet;
 <a href="https://github.com/diht2016/green-tech-mipt/issues" target="_blank">Обратная связь по карте</a>
+&bullet;
+Актуально на 2019.11.23
 <div id="map-container"></div>
-<button id="text-button" onclick="textList.hidden = !textList.hidden">Перечислить по всем общежитиям</button>
+<button id="text-button" onclick="textList.hidden = !textList.hidden">Перечислить все пункты</button>
 <div id="text-list" hidden>...</div>
 <script>
 let textList = document.getElementById('text-list')
@@ -72,7 +74,6 @@ let wrap = (content, tagName) => '<' + tagName + '>' + content + '</' + tagName 
 let capitalize = (str) => str[0].toUpperCase() + str.slice(1)
 
 
-// json database
 let global = {
     coords: [55.93001, 37.52196],
     minZoom: 14,
@@ -80,12 +81,20 @@ let global = {
     maxZoom: 18,
 }
 
+// json database of all places
 let places = [
+    // общежития
     {
         id: '1',
         coords: [55.93088, 37.52158],
+        items: [
+            {
+                title: 'Макулатура',
+                info: '1 этаж, боталка (справа после турникета), коробка справа под книжной полкой'
+            },
+        ],
+        type: 'little-gray',
         comment: 'Планируется установить пункты сбора в ближайшее время (ориентировочно - в декабре 2019)',
-        type: 'gray',
     },
     {
         id: '2',
@@ -134,7 +143,7 @@ let places = [
             },
             {
                 title: 'Макулатура',
-                info: '3 этаж, боталка, коробки на книжном шкафу'
+                info: '3 этаж, боталка, коробка на книжном шкафу слева'
             },
             {
                 title: 'Ручки, маркеры, фломастеры, зубные щётки',
@@ -148,11 +157,19 @@ let places = [
         coords: [55.92892, 37.52329],
         items: [
             {
-                title: 'Пластиковые бутылки и канистры, алюминиевые банки',
+                title: 'Макулатура',
+                info: '1 этаж, громкая боталка'
+            },
+            {
+                title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
                 info: '3 этаж, южная кухня'
             },
+            {
+                title: 'Ручки, маркеры, фломастеры, зубные щётки',
+                info: 'пятилитровка в громкой боталке, 1 этаж'
+            },
         ],
-        type: 'little-gray',
+        type: 'normal',
     },
     {
         id: '8',
@@ -160,11 +177,11 @@ let places = [
         items: [
             {
                 title: 'Пластиковые бутылки, канистры и крышечки, алюминиевые банки',
-                info: '3, 5, 7 этажи, северное крыло, комнатки с мусоропроводом'
+                info: 'северное крыло, комнатки с мусоропроводом на 3 и 5 этажах, северная кухня на 7 этаже'
             },
             {
                 title: 'Макулатура',
-                info: '3 этаж, белый контейнер у пункта сбора пластика'
+                info: '3 этаж, белый контейнер в комнатке с мусоропроводом'
             },
             {
                 title: 'Ручки, маркеры, фломастеры, зубные щётки',
@@ -174,12 +191,31 @@ let places = [
         type: 'normal',
     },
     {
+        id: '9',
+        coords: [55.92728, 37.52359],
+        comment: 'Пунктов сбора в общежитии нет, но поблизости есть синие контейнеры',
+        type: 'gray',
+    },
+    {
+        id: '10',
+        coords: [55.93009, 37.52267],
+        comment: 'Пунктов сбора в общежитии нет, так как оно квартирного типа',
+        type: 'gray',
+    },
+    {
+        id: '11',
+        coords: [55.93067, 37.52243],
+        comment: 'Пунктов сбора в общежитии нет, так как оно квартирного типа',
+        type: 'gray',
+    },
+    {
         id: '12',
         coords: [55.93161, 37.51890],
         comment: 'Пункт сбора пластика есть у ворот, были мысли установить на 1 этаже пункт сбора макулатуры',
         type: 'gray',
     },
 
+    // корпуса
     {
         id: 'kpm',
         name: 'КПМ',
@@ -190,6 +226,7 @@ let places = [
                 info: '1 этаж, у входа в МФТИ-телеком, а также 2 этаж, у входа в столовую'
             },
         ],
+        comment: 'Примечание: нам не известно, кто собирает эти батарейки',
         type: 'orange',
     },
     {
@@ -202,9 +239,11 @@ let places = [
                 info: 'главный вход, в промежутке между дверями'
             },
         ],
+        comment: 'Примечание: нам не известно, кто собирает эти батарейки',
         type: 'orange',
     },
 
+    // внешние пункты
     {
         id: 'mainpoint',
         name: 'Основной пункт приёма вторсырья',
@@ -223,7 +262,7 @@ let places = [
     },
     {
         id: 'bluebox8',
-        name: 'Синий контейнер',
+        name: 'Синий контейнер между общежитиями №8 и №9',
         coords: [55.92768, 37.52382],
         items: [
             {title: 'Пластиковые бутылки и канистры'},
@@ -235,7 +274,7 @@ let places = [
     },
     {
         id: 'bluebox9',
-        name: 'Синий контейнер',
+        name: 'Синий контейнер у дорожки на Новодачную',
         coords: [55.92699, 37.52419],
         items: [
             {title: 'Пластиковые бутылки и канистры'},
@@ -247,7 +286,7 @@ let places = [
     },
     {
         id: 'bluebox12',
-        name: 'Синий контейнер',
+        name: 'Синий контейнер у ворот общежития №12',
         coords: [55.93215, 37.51930],
         items: [
             {title: 'Пластиковые бутылки и канистры'},
@@ -259,7 +298,7 @@ let places = [
     },
     {
         id: 'petbox12',
-        name: 'Контейнер-клетка',
+        name: 'Контейнер-клетка у ворот общежития №12',
         coords: [55.93219, 37.51935],
         items: [
             {title: 'Пластиковые бутылки и канистры'},
@@ -277,15 +316,17 @@ let places = [
                 info: 'внутри у входа на столе стоит контейнер'
             },
         ],
+        comment: 'Подробнее про то, как ВкусВилл принимает батарейки: <a target="_blank" href="https://vkusvill.ru/news/prinimaem-batareyki.html">1</a>, <a target="_blank" href="https://vkusvill.ru/news/pervyy-po-batareykam.html">2</a>, <a target="_blank" href="https://vkusvill.ru/news/batareyki-na-utilizatsiyu.html">3</a>',
         type: 'orange',
     },
     {
         id: 'mercurybox',
-        name: 'Оранжевый контейнер',
+        name: 'Оранжевый контейнер за домом культуры',
         coords: [55.93433, 37.51406],
         items: [
-            {title: 'Ртутные лампы, батарейки, градусники'},
+            {title: 'Энергосберегающие (ртутные) лампы, батарейки, градусники'},
         ],
+        comment: '<a target="_blank" href="https://ecobox.ru/product-category/energolamp/">Подробнее</a>',
         type: 'orange',
     },
     
@@ -314,6 +355,7 @@ function createMap(elementId) {
 
     let textListHTML = ''
     
+    // process places, create markers
     for (let p of places) {
         let marker = L.marker(p.coords, {
             alt: p.name,
@@ -327,9 +369,7 @@ function createMap(elementId) {
             content += wrap(p.comment, 'p')
         }
         
-        if (p.id.match(/^\d+$/)) {
-            textListHTML += content
-        }
+        textListHTML += content
 
         let popup = L.popup()
             .setLatLng(p.coords)
