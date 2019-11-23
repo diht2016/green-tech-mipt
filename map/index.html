@@ -16,16 +16,18 @@ html {
     text-align: center;
     font-family: sans-serif;
 }
+h1 {
+    margin: 0.4em 0;
+}
 #map-container {
     height: 500px;
     max-height: 72vh;
     max-width: 750px;
-    margin: 0.5em auto;
+    margin: 1em auto;
     border: #7a7 0.2em solid;
 }
 #text-button {
     cursor: pointer;
-    text-decoration: underline dashed;
 }
 #text-list {
     max-width: 400px;
@@ -54,8 +56,11 @@ html {
 </head>
 <body>
 <h1>Карта пунктов приёма вторсырья МФТИ</h1>
+<a href="https://vk.com/green_tech_mipt" target="_blank">Связаться с нами</a>
+&bullet;
+<a href="https://github.com/diht2016/green-tech-mipt/issues" target="_blank">Обратная связь по карте</a>
 <div id="map-container"></div>
-<h2 id="text-button" onclick="textList.hidden = !textList.hidden">Показать по всем общежитиям</h2>
+<button id="text-button" onclick="textList.hidden = !textList.hidden">Перечислить по всем общежитиям</button>
 <div id="text-list" hidden>...</div>
 <script>
 let textList = document.getElementById('text-list')
@@ -67,10 +72,10 @@ let capitalize = (str) => str[0].toUpperCase() + str.slice(1)
 
 // json database
 let global = {
-    coords: [55.93001, 37.52146],
+    coords: [55.93001, 37.52196],
     minZoom: 14,
     zoom: 16,
-    maxZoom: 19,
+    maxZoom: 18,
 }
 
 let places = [
