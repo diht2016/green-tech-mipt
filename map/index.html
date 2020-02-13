@@ -37,7 +37,7 @@ ul {
 #text-button {
     cursor: pointer;
 }
-#text-list {
+.bordered-box {
     max-width: 600px;
     margin: 0.5em auto;
     text-align: left;
@@ -50,16 +50,28 @@ ul {
     filter: grayscale(1) brightness(1.5);
 }
 .marker-blue-gray {
-    filter: grayscale(0.5);
+    filter: grayscale(0.6) brightness(1.1);
 }
 .marker-orange {
     filter: hue-rotate(180deg);
+}
+.marker-cyan {
+    filter: hue-rotate(325deg) contrast(1.8);
 }
 .marker-green {
     filter: hue-rotate(240deg);
 }
 .marker-light-green {
     filter: hue-rotate(240deg) grayscale(0.5) brightness(1.5);
+}
+
+.legend-marker {
+    display: inline-block;
+    background-image: url(https://unpkg.com/leaflet@1.6.0/dist/images/marker-icon-2x.png);
+    background-position: center;
+    background-size: contain;
+    width: 0.75em;
+    height: 1.23em;
 }
 </style>
 </head>
@@ -69,13 +81,59 @@ ul {
 &bullet;
 <a href="https://github.com/diht2016/green-tech-mipt/issues" target="_blank">Обратная связь по карте</a>
 &bullet;
-Актуально на 2019.12.20
+Актуально на 2020.02.13
 <div id="map-container"></div>
-<button id="text-button" onclick="textList.hidden = !textList.hidden">Перечислить все пункты</button>
-<button id="text-button" onclick="showLegend()">Легенда карты</button>
-<div id="text-list" hidden>...</div>
+<button id="text-button" onclick="toggleHidden(textList)">Перечислить все пункты</button>
+<button id="text-button" onclick="toggleHidden(legend)">Легенда карты</button>
+<div id="legend" class="bordered-box" hidden>
+Разными цветами указаны разные типы пунктов:
+<ul style="list-style: none;">
+<li>
+<span class="legend-marker marker-green"></span>
+<span class="legend-marker marker-light-green"></span>
+ - внешние пункты сбора вторсырья</li>
+<li>
+<span class="legend-marker marker-blue"></span>
+<span class="legend-marker marker-blue-gray"></span>
+ - общежития, в которых есть пункты сбора вторсырья (принимается только макулатура, пластиковые бутылки, канистры и крышечки, а также ручки, зубные щётки, маркеры и фломастеры)</li>
+<li>
+<span class="legend-marker marker-gray"></span>
+ - общежития, в которых нет пунктов сбора вторсырья</li>
+<li>
+<span class="legend-marker marker-orange"></span>
+ - пункты приёма опасных отходов (в основном, батареек)</li>
+<li>
+<span class="legend-marker marker-cyan"></span>
+ - пункты приёма одежды и обуви</li>
+</ul>
+<br>
+На карте также отмечены некоторые пункты в городе Долгопрудный за пределами кампуса МФТИ.
+</div>
+<div id="text-list" class="bordered-box" hidden>...</div>
 <script>
 let textList = document.getElementById('text-list')
+let legend = document.getElementById('legend')
+
+function toggleHidden(elem) {
+    elem.hidden = !elem.hidden
+    
+    if (!elem.hidden) {
+        scrollToElement(elem)
+    }
+}
+
+function scrollToElement(elem, limit=40, iter=0, k=0.12, delay=15) {
+    if (iter >= limit) {
+        return
+    }
+    let rect = elem.getClientRects()[0]
+    if (!rect) {
+        return
+    }
+    let delta = rect.top * k
+    document.documentElement.scrollTop += delta
+    setTimeout(scrollToElement, delay, elem, limit, iter + 1, k, delay)
+}
 
 // util functions
 let wrap = (content, tagName) => '<' + tagName + '>' + content + '</' + tagName + '>'
@@ -106,7 +164,7 @@ let places = [
             },
         ],
         //comment: 'Планируется установить пункты сбора в ближайшее время (ориентировочно - в декабре 2019)',
-        type: 'blue-gray',
+        type: 'blue',
     },
     {
         id: '2',
@@ -142,7 +200,7 @@ let places = [
         id: '4',
         coords: [55.93108, 37.52293],
         items: null,
-        comment: 'Пунктов сбора пока что нет. Тем не менее, рядом с общежитием есть главный пункт приёма, куда можно сдать пластиковые бутылки и макулатуру.',
+        comment: 'Пунктов сбора внутри общежития пока что нет, но рядом с общежитием есть главный пункт приёма, куда можно сдать пластиковые бутылки и макулатуру.',
         type: 'gray',
     },
     {
@@ -230,23 +288,93 @@ let places = [
         items: [
             {
                 title: 'Батарейки',
-                info: '1 этаж, у входа в МФТИ-телеком, а также 2 этаж, у входа в столовую'
+                info: '2 этаж, у входа в столовую, а также 1 этаж, у входа в МФТИ-телеком'
             },
         ],
-        comment: 'Примечание: нам не известно, кто собирает эти батарейки',
+        type: 'orange',
+    },
+    {
+        id: 'nk',
+        name: 'НК',
+        coords: [55.92949, 37.52059],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, главный вход, в промежутке между дверями (справа, если смотреть с улицы)'
+            },
+        ],
         type: 'orange',
     },
     {
         id: 'hall',
         name: 'Концерт-зал',
-        coords: [55.92972, 37.51752],
+        coords: [55.92972, 37.51742],
         items: [
             {
                 title: 'Батарейки',
-                info: 'главный вход, в промежутке между дверями'
+                info: '1 этаж, главный вход, в промежутке между дверями (справа, если смотреть с улицы)'
             },
         ],
-        comment: 'Примечание: нам не известно, кто собирает эти батарейки',
+        type: 'orange',
+    },
+    {
+        id: 'lk',
+        name: 'ЛК',
+        coords: [55.93016, 37.51800],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, главный вход, в промежутке между дверями (слева, если смотреть с улицы)'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'ak',
+        name: 'АК',
+        coords: [55.93086, 37.51958],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, главный вход, в промежутке между дверями (справа, если смотреть с улицы)'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'bfk',
+        name: 'БФК',
+        coords: [55.92980, 37.51583],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, главный вход, в промежутке между дверями (справа, если смотреть с улицы)'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'ulk1',
+        name: 'Физтех.Цифра',
+        coords: [55.92903, 37.51864],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, рядом с турникетами у главного входа'
+            },
+        ],
+        type: 'orange',
+    },
+    {
+        id: 'ulk2',
+        name: 'Физтех.Арктика',
+        coords: [55.92833, 37.51828],
+        items: [
+            {
+                title: 'Батарейки',
+                info: '1 этаж, главный вход, в промежутке между дверями (у колонны по центру)'
+            },
+        ],
         type: 'orange',
     },
 
@@ -265,6 +393,9 @@ let places = [
                 info: 'с задней стороны домика есть окошко, в которое можно сдать макулатуру (если не влезает - можно положить у окошка рядом)'
             },
         ],
+        comment: 'Здесь по выходным проводятся акции по сбору большого числа видов вторсырья, подробнее можно узнать <a href="https://vk.com/waste_sorting">тут</a>.'
+        + '<br><br>' +
+        'Также в ближайшее время планируется поставить круглосуточный пункт сбора стекла.',
         type: 'green',
     },
     {
@@ -304,7 +435,7 @@ let places = [
         type: 'light-green',
     },
     {
-        id: 'petbox12',
+        id: 'orangebox12',
         name: 'Контейнер-клетка у ворот общежития №12',
         coords: [55.93219, 37.51935],
         items: [
@@ -337,6 +468,28 @@ let places = [
         type: 'orange',
     },
     
+    {
+        id: 'clothesbox_konfitur',
+        name: 'Сине-зелёный контейнер у входа в торговый центр "Конфитюр"',
+        coords: [55.93133, 37.49366],
+        items: [
+            {title: 'Одежда, обувь, сумки и аксессуары (кроме нижнего белья, носков и колготок)'},
+        ],
+        comment: 'Вещи собирает <a target="_blank" href="https://vtoroe.ru/">Второе дыхание</a>. Про правила приёма <a target="_blank" href="https://vtoroe.ru/modno-sdat/chto-mozhno-sdavat/">читайте тут</a>.',
+        type: 'cyan',
+    },
+    
+    {
+        id: 'clothesbox_polet',
+        name: 'Сине-зелёный контейнер у входа в торговый центр "Полёт"',
+        coords: [55.94628, 37.50619],
+        items: [
+            {title: 'Одежда, обувь, сумки и аксессуары (кроме нижнего белья, носков и колготок)'},
+        ],
+        comment: 'Вещи собирает <a target="_blank" href="https://vtoroe.ru/">Второе дыхание</a>. Про правила приёма <a target="_blank" href="https://vtoroe.ru/modno-sdat/chto-mozhno-sdavat/">читайте тут</a>.',
+        type: 'cyan',
+    },
+    
 ]
 
 // data completion
@@ -355,7 +508,7 @@ function createMap(elementId) {
     let map = L.map(elementId).setView(global.coords, global.zoom)
 
     L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
         maxZoom: global.maxZoom,
         minZoom: global.minZoom,
     }).addTo(map)
@@ -393,17 +546,6 @@ function createMap(elementId) {
 }
 
 createMap('map-container')
-
-function showLegend() {
-    alert([
-        'Разными цветами указаны разные типы пунктов:',
-        '* зелёные - внешние пункты сбора вторсырья',
-        '* синие и серые - общежития (в серых пунктов нет)',
-        '* оранжевые - пункты приёма опасных отходов (например, батареек)',
-        '',
-        'На карте также отмечены 2 оранжевых пункта вне кампуса МФТИ.',
-    ].join('\n'))
-}
 
 </script>
 </body>
