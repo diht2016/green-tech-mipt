@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Статистика сбора пластиковых бутылок в общежитии №2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c0deab">
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<style>
+html {
+    background: #c0deab;
+    color: #030;
+    text-align: center;
+    font-family: sans-serif;
+}
+h1 {
+    margin: 0.4em 0;
+}
+img, iframe {
+    max-width: 90vw;
+}
+iframe {
+    border: none;
+    width: 500px;
+    height: 80px;
+}
+a {
+    text-decoration-skip-ink: none;
+}
+</style>
+</head>
+<body>
+<h1>Статистика сбора пластиковых бутылок в общежитии №2</h1>
+<p>
+<a href="./2ka_plastic_data.txt" target="_blank">Сырые данные</a>
+&bullet;
+<a href="https://github.com/diht2016/green-tech-mipt/tree/master/stats/main.py" target="_blank">Скрипт для обработки и построения графиков</a>
+</p>
+<iframe src="./report.txt"></iframe>
+<img src="./bottle-collection-stat-2ka.png">
+<img src="./bottle-collection-days-2ka.png">
+<img src="./bottle-collection-smooth-2ka.png">
+</body>
+</html>
