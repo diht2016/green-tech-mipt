@@ -20,5 +20,9 @@ def next_day(d3):
     return (d3[0], d3[1], d3[2] + 1)
 
 
-def str_dates(d3_arr):
-    return ['-'.join('%02d' % x for x in d3) for d3 in d3_arr]
+def str_to_d3(date_str):
+    return tuple(int(x) for x in date_str.split('-'))
+
+
+def d3_to_str(d3):
+    return '-'.join('%02d' % x for x in d3)

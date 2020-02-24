@@ -1,12 +1,13 @@
-from utils import is_leap_year, days_in_month, next_day, str_dates
+from utils import *
 
 
 # read the data
 with open('2ka_plastic_data.txt') as f:
     lines = f.read().strip().splitlines()
-curr_date = (2019, 8, 29)
 
 
+# get start date
+curr_date = str_to_d3(lines.pop(0).split(': ')[0])
 
 # parse lines
 sparse_dates = []
@@ -14,7 +15,7 @@ sparse_weights = []
 for line in lines:
     date_str, weight_parts = line.strip().split(': ')
     weight = sum(float(x) for x in weight_parts.split(', '))
-    date = tuple(int(x) for x in date_str.split('-'))
+    date = str_to_d3(date_str)
     sparse_dates.append(date)
     sparse_weights.append(weight)
 
@@ -46,10 +47,14 @@ total_days = len(full_d)
 total_actions = len(sparse_weights)
 total_weight = sum(sparse_weights)
 
+# stringify dates
+full_d_str = [d3_to_str(d3) for d3 in full_d]
+sparse_dates_str = [d3_to_str(d3) for d3 in sparse_dates]
+
 #print(['%.2f' % k for k in full_k])
 
 report_text = '\n'.join([
-    u'Всего собрано: {:.3f} кг за {:d} дней (в среднем {:.3f} кг в день)'.format(
+    u'Всего собрано: {:.1f} кг за {:d} дней (в среднем {:.3f} кг в день)'.format(
     total_weight, total_days, total_weight / total_days),
     u'В среднем собирается {:.3f} кг раз в {:.3f} дня'.format(
     total_weight / total_actions, total_days / total_actions),
@@ -74,8 +79,8 @@ colors = [palette[int(wd == 6) + 2 * (d[1] & 1)] for wd, d in zip(full_w, full_d
 plt.figure(figsize=figsize)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(1, color='gray', linestyle='--')
-plt.bar(str_dates(full_d), full_k, width=0.9, color=colors)
-plt.xticks(str_dates(full_d)[::3], rotation=75)
+plt.bar(full_d_str, full_k, width=0.9, color=colors)
+plt.xticks(full_d_str[::3], rotation=75)
 plt.ylabel('КГ в день')
 plt.grid(axis='y', which='both')
 plt.savefig('bottle-collection-stat-2ka.png', dpi=dpi, bbox_inches='tight')
@@ -84,8 +89,8 @@ plt.savefig('bottle-collection-stat-2ka.png', dpi=dpi, bbox_inches='tight')
 plt.figure(figsize=figsize)
 plt.title('Даты выноса пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(4, color='gray', linestyle='--')
-plt.bar(str_dates(full_d), full_a, width=0.9, color=colors)
-plt.xticks(str_dates(sparse_dates), rotation=85)
+plt.bar(full_d_str, full_a, width=0.9, color=colors)
+plt.xticks(sparse_dates_str, rotation=85)
 plt.ylabel('КГ')
 plt.grid(axis='y')
 plt.savefig('bottle-collection-days-2ka.png', dpi=dpi, bbox_inches='tight')
@@ -103,9 +108,9 @@ plt.figure(figsize=figsize)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(0, color='k', linestyle='-')
 plt.axhline(1, color='gray', linestyle='--')
-plt.plot(str_dates(full_d), full_k, label='Точное')
-plt.plot(str_dates(full_d), full_k_smooth, linestyle='--', label='Экспоненциальное среднее (gamma=0.9)')
-plt.xticks(str_dates(full_d)[::7], rotation=70)
+plt.plot(full_d_str, full_k, label='Точное')
+plt.plot(full_d_str, full_k_smooth, linestyle='--', label='Экспоненциальное среднее (gamma=0.9)')
+plt.xticks(full_d_str[::7], rotation=70)
 plt.ylabel('КГ в день')
 plt.grid(axis='y')
 plt.legend()
