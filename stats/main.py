@@ -54,9 +54,11 @@ sparse_dates_str = [d3_to_str(d3) for d3 in sparse_dates]
 #print(['%.2f' % k for k in full_k])
 
 report_text = '\n'.join([
-    u'Всего собрано: {:.1f} кг за {:d} дней (в среднем {:.3f} кг в день)'.format(
-    total_weight, total_days, total_weight / total_days),
-    u'В среднем собирается {:.3f} кг раз в {:.3f} дня'.format(
+    u'Всего собрано: {:.1f} кг за {:d} дней.'.format(
+    total_weight, total_days),
+    u'В среднем собирается {:.3f} кг в день ({:.3f} кг в неделю).'.format(
+    total_weight / total_days, 7 * total_weight / total_days),
+    u'Один мешок собирает в среднем {:.3f} кг и выносится раз в {:.3f} дня.'.format(
     total_weight / total_actions, total_days / total_actions),
 ])
 #print(report_text)
