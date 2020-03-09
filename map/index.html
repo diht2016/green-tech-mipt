@@ -81,10 +81,12 @@ ul {
 &bullet;
 <a href="https://github.com/diht2016/green-tech-mipt/issues" target="_blank">Обратная связь по карте</a>
 &bullet;
-Актуально на 2020.02.22
+Актуально на 2020.03.09
 <div id="map-container"></div>
 <button id="text-button" onclick="toggleHidden(textList)">Перечислить все пункты</button>
 <button id="text-button" onclick="toggleHidden(legend)">Легенда карты</button>
+<button id="text-button" onclick="toggleHidden(filter)">Фильтр меток по типам вторсырья</button>
+<div id="text-list" class="bordered-box" hidden>...</div>
 <div id="legend" class="bordered-box" hidden>
 Разными цветами указаны разные типы пунктов:
 <ul style="list-style: none;">
@@ -109,12 +111,22 @@ ul {
 <br>
 На карте также отмечены некоторые пункты в городе Долгопрудный за пределами кампуса МФТИ.
 </div>
-<div id="text-list" class="bordered-box" hidden>...</div>
+<div id="filter" class="bordered-box" hidden>
+<div id="filter-select"></div>
+<p>Не нашли в списке нужный вид вторсырья? Если этот вид есть в инструкции на <a target="_blank" href="https://sobirator.ru/">сайте Собиратора</a>, то его можно сдавать на акциях, которые проводятся у главного пункта за 4 общежитием. Подробнее про даты проведения смотрите <a target="_blank" href="https://vk.com/waste_sorting">тут</a>.</p>
+</div>
 <script>
 let textList = document.getElementById('text-list')
 let legend = document.getElementById('legend')
+let filter = document.getElementById('filter')
 
 function toggleHidden(elem) {
+    if (elem.hidden) {
+        // close all boxes before opening this box
+        for (let otherElem of document.getElementsByClassName('bordered-box')) {
+            otherElem.hidden = true
+        }
+    }
     elem.hidden = !elem.hidden
     
     if (!elem.hidden) {
@@ -389,13 +401,16 @@ let places = [
                 info: 'контейнер-клетка перед домиком'
             },
             {
+                title: 'Стекло (бутылки, банки, оконное стекло)',
+                info: 'зелёный контейнер перед домиком'
+            },
+            {
                 title: 'Макулатура',
                 info: 'с задней стороны домика есть окошко, в которое можно сдать макулатуру (если не влезает - можно положить у окошка рядом)'
             },
         ],
-        comment: 'Здесь по выходным проводятся акции по сбору большого числа видов вторсырья, подробнее можно узнать <a href="https://vk.com/waste_sorting">тут</a>.'
-        + '<br><br>' +
-        'Также в ближайшее время планируется поставить круглосуточный пункт сбора стекла.',
+        comment: 'Здесь по выходным проводятся акции по сбору большого числа видов вторсырья, подробнее можно узнать <a target="_blank" href="https://vk.com/waste_sorting">тут</a>.',
+        // Контейнер для стекла установлен 2020-03-09
         type: 'green',
     },
     {
@@ -538,6 +553,7 @@ function createMap(elementId) {
         marker.addEventListener('click', () => popup.openOn(map))
         marker.bindTooltip(p.name)
         marker._icon.classList.add('marker-' + p.type)
+        p._marker = marker
     }
     
     textList.innerHTML = textListHTML
@@ -545,7 +561,125 @@ function createMap(elementId) {
     return map
 }
 
-createMap('map-container')
+let map = createMap('map-container')
+
+
+
+let filterOptions = [
+    {
+        title: 'показать всё',
+        match: '',
+    },
+    {
+        title: 'макулатура (бумага и картон)',
+        match: 'макулатур',
+    },
+    {
+        title: 'пластиковые бутылки и канистры',
+        match: 'пластик',
+    },
+    {
+        title: 'пластиковые крышечки',
+        match: 'крышечки',
+    },
+    {
+        title: 'алюминиевые банки',
+        match: 'алюмин',
+    },
+    {
+        title: 'стекло',
+        match: 'стекл',
+    },
+    {
+        title: 'ручки, зубные щётки, маркеры и фломастеры',
+        match: 'зубн',
+    },
+    {
+        title: 'батарейки',
+        match: 'батарейк',
+    },
+    {
+        title: 'ртутные лампы и градусники',
+        match: 'ртут',
+    },
+    {
+        title: 'одежда и обувь',
+        match: 'одежд',
+    },
+]
+
+function initFilter() {
+    // just easy naive search by regular expression occurrence
+    // could be substring search but reserved regular expression for complex queries
+    let container = document.getElementById('filter-select')
+    
+    for (let type of filterOptions) {
+        let label = document.createElement('label')
+        label.style.display = 'block'
+        
+        let radio = document.createElement('input')
+        radio.type = 'radio'
+        radio.name = 'filter'
+        radio.value = type.match
+        radio.checked = type.match == ''
+        radio.style.verticalAlign = 'text-top'
+        radio.style.marginRight = '0.5em'
+        radio.onchange = applyFilter
+        
+        label.appendChild(radio)
+        label.appendChild(document.createTextNode(type.title))
+        container.appendChild(label)
+    }
+}
+
+function applyFilter() {
+    let match = this.value
+    let regexp = match ? new RegExp(match, 'i') : null
+    let count = 0
+    
+    let groupList = []
+    
+    map.closePopup()
+    
+    for (let p of places) {
+        let matched = false
+        
+        if (regexp) {
+            if (p.items) {
+                for (let item of p.items) {
+                    if (regexp.test(item.title)) {
+                        matched = true
+                        break
+                    }
+                }
+            }
+        } else {
+            matched = true
+        }
+        
+        let marker = p._marker
+        
+        if (matched) {
+            marker.addTo(map)
+            // restore marker color
+            marker._icon.classList.add('marker-' + p.type)
+            groupList.push(marker)
+            count++
+        } else {
+            marker.remove()
+        }
+    }
+    
+    // zoom markers into view
+    let group = new L.featureGroup(groupList)
+    map.fitBounds(group.getBounds())
+    scrollToElement(document.getElementById('map-container'))
+    
+    // not used yet
+    return count
+}
+
+initFilter()
 
 </script>
 </body>
