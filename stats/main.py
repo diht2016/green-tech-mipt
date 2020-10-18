@@ -71,31 +71,44 @@ with open('report.txt', 'wb') as f:
 # now draw plots
 from matplotlib import pyplot as plt
 
-figsize = (24, 8) # plot size
+figsize = (32, 8) # plot size
 dpi = 200 # output image size
 
-# color is affected by month parity and sundays
-palette = ['#55aaff', '#4488cc', '#7788ff', '#6666cc']
-colors = [palette[int(wd == 6) + 2 * (d[1] & 1)] for wd, d in zip(full_w, full_d)]
+outer_bg = "#d4e8c5"
+inner_bg = "#e0efd6"
+
+# old palette
+#palette = ['#55aaff', '#4488cc', '#7788ff', '#6666cc']
+#colors = [palette[int(wd == 6) + 2 * (d[1] & 1)] for wd, d in zip(full_w, full_d)]
+
+# generate rainbow-like palette, 2 colors per month
+import math
+cosc = lambda x: (1 + math.cos(x * 2 * math.pi)) / 2
+color = lambda i, d: [cosc(i/12 + x/3) * [0.7, 0.5][d] + 0.1 for x in [1, 2, 3]]
+season_sameness = 0.25 # from 0.0 to 1.0
+palette = [color((i // 2 + 1) - season_sameness * ((i // 2 + 1) % 3 - 1), i % 2) for i in range(12 * 2)]
+colors = [palette[int(wd == 6) + 2 * (d[1] - 1)] for wd, d in zip(full_w, full_d)]
 
 plt.figure(figsize=figsize)
+plt.axes().set_facecolor(inner_bg)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(1, color='gray', linestyle='--')
 plt.bar(full_d_str, full_k, width=0.9, color=colors)
 plt.xticks(full_d_str[::3], rotation=85)
 plt.ylabel('КГ в день')
 plt.grid(axis='y', which='both')
-plt.savefig('bottle-collection-stat-2ka.png', dpi=dpi, bbox_inches='tight')
+plt.savefig('bottle-collection-stat-2ka.png', dpi=dpi, bbox_inches='tight', facecolor=outer_bg)
 #plt.show()
 
 plt.figure(figsize=figsize)
+plt.axes().set_facecolor(inner_bg)
 plt.title('Даты выноса пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(4, color='gray', linestyle='--')
 plt.bar(full_d_str, full_a, width=0.9, color=colors)
 plt.xticks(sparse_dates_str, rotation=90)
 plt.ylabel('КГ')
 plt.grid(axis='y')
-plt.savefig('bottle-collection-days-2ka.png', dpi=dpi, bbox_inches='tight')
+plt.savefig('bottle-collection-days-2ka.png', dpi=dpi, bbox_inches='tight', facecolor=outer_bg)
 #plt.show()
 
 # smoothing experiments
@@ -107,6 +120,7 @@ for k in full_k[1:]:
     full_k_smooth.append(smooth_k)
 
 plt.figure(figsize=figsize)
+plt.axes().set_facecolor(inner_bg)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
 plt.axhline(0, color='k', linestyle='-')
 plt.axhline(1, color='gray', linestyle='--')
@@ -116,5 +130,5 @@ plt.xticks(full_d_str[::7], rotation=80)
 plt.ylabel('КГ в день')
 plt.grid(axis='y')
 plt.legend()
-plt.savefig('bottle-collection-smooth-2ka.png', dpi=dpi, bbox_inches='tight')
+plt.savefig('bottle-collection-smooth-2ka.png', dpi=dpi, bbox_inches='tight', facecolor=outer_bg)
 #plt.show()
