@@ -100,7 +100,7 @@ ul {
 <li>
 <span class="legend-marker marker-blue"></span>
 <span class="legend-marker marker-blue-gray"></span>
- - общежития, в которых есть пункты сбора вторсырья (принимается только макулатура, пластиковые бутылки, канистры и крышечки, а также ручки, зубные щётки, маркеры и фломастеры)</li>
+ - общежития, в которых есть пункты сбора вторсырья (в основном принимаются макулатура, пластиковые бутылки, канистры и крышечки, а также ручки, зубные щётки, маркеры и фломастеры)</li>
 <li>
 <span class="legend-marker marker-gray"></span>
  - общежития, в которых нет пунктов сбора вторсырья</li>
@@ -296,8 +296,18 @@ let places = [
     {
         id: '12',
         coords: [55.93161, 37.51890],
-        comment: 'Пункт сбора пластика и синий контейнер есть за воротами. Возможно, в будущем на 1 этаже появится пункт сбора макулатуры.',
-        type: 'gray',
+        items: [
+            {
+                title: 'Электрохлам',
+                info: '1 этаж, пластиковая коробка рядом с принтбоксом'
+            },
+            {
+                title: 'Ручки, маркеры, фломастеры, зубные щётки, CD и DVD диски, трубочки от напитков, бритвенные станки, контейнеры от линз',
+                info: '1 этаж, пятилитровка на столике принтбокса'
+            },
+        ],
+        //comment: 'Пункт сбора пластика и синий контейнер есть за воротами. Возможно, в будущем на 1 этаже появится пункт сбора макулатуры.',
+        type: 'blue-gray',
     },
 
     // корпуса
@@ -506,7 +516,7 @@ let places = [
     
     {
         id: 'clothesbox_konfitur',
-        name: 'Сине-зелёный контейнер у входа в торговый центр "Конфитюр"',
+        name: 'Бирюзовый контейнер у входа в торговый центр "Конфитюр"',
         coords: [55.93133, 37.49366],
         items: [
             {title: 'Одежда, обувь, сумки и аксессуары (кроме нижнего белья, носков и колготок)'},
@@ -517,7 +527,7 @@ let places = [
     
     {
         id: 'clothesbox_polet',
-        name: 'Сине-зелёный контейнер у входа в торговый центр "Полёт"',
+        name: 'Бирюзовый контейнер у входа в торговый центр "Полёт"',
         coords: [55.94628, 37.50619],
         items: [
             {title: 'Одежда, обувь, сумки и аксессуары (кроме нижнего белья, носков и колготок)'},
@@ -528,10 +538,28 @@ let places = [
     
 ]
 
+let inactiveItemMessages = (item) => {
+    //if (item.info && item.info.includes("боталк")) {
+    //    // all book rooms are closed now
+    //    return "Боталки в общежитиях закрыты в связи с режимом самоизоляции"
+    //}
+    return null
+}
+
 // data completion
 for (let p of places) {
     if (p.id.match(/^\d+$/) && !p.name) {
         p.name = 'Общежитие №' + p.id
+    }
+    
+    // disable all inactive items
+    if (inactiveItemMessages && p.items) {
+        p.items.forEach((item) => {
+            let inactiveFor = inactiveItemMessages(item)
+            if (inactiveFor) {
+                item.disabled = inactiveFor
+            }
+        })
     }
 }
 
@@ -543,7 +571,7 @@ for (let p of places) {
 function createMap(elementId) {
     let map = L.map(elementId).setView(global.coords, global.zoom)
 
-    L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
         maxZoom: global.maxZoom,
         minZoom: global.minZoom,
@@ -559,7 +587,14 @@ function createMap(elementId) {
         
         let content = wrap(p.name + ':', 'h3')
         if (p.items) {
-            content += wrap(p.items.map(item => wrap(wrap(item.title, 'b') + (item.info ? ': ' + item.info : ''), 'li')).join(''), 'ul')
+            content += wrap(p.items.map(item => {
+                    let content = wrap(item.title, 'b') + (item.info ? ': ' + item.info : '')
+                    if (item.disabled) {
+                        content = wrap(content, 's') + ' [' + item.disabled + ']'
+                        content = '<span style="opacity: 0.5">' + content + '</span>'
+                    }
+                    return wrap(content, 'li')
+                }).join(''), 'ul')
         }
         if (p.comment) {
             content += wrap(p.comment, 'p')
@@ -589,7 +624,7 @@ let map = createMap('map-container')
 let filterOptions = [
     {
         title: 'показать всё',
-        match: '',
+        match: '*',
     },
     {
         title: 'макулатура (бумага и картон)',
@@ -642,7 +677,6 @@ function initFilter() {
         radio.type = 'radio'
         radio.name = 'filter'
         radio.value = type.match
-        radio.checked = type.match == ''
         radio.style.verticalAlign = 'text-top'
         radio.style.marginRight = '0.5em'
         radio.onchange = applyFilter
@@ -651,11 +685,15 @@ function initFilter() {
         label.appendChild(document.createTextNode(type.title))
         container.appendChild(label)
     }
+    
+    container.firstChild.firstChild.checked = true
+    // using setTimeout because browsers sometimes remember the last choice
+    setTimeout(() => container.firstChild.firstChild.checked = true, 0)
 }
 
 function applyFilter() {
     let match = this.value
-    let regexp = match ? new RegExp(match, 'i') : null
+    let regexp = match != '*' ? new RegExp(match, 'i') : null
     let count = 0
     
     let groupList = []
@@ -668,7 +706,7 @@ function applyFilter() {
         if (regexp) {
             if (p.items) {
                 for (let item of p.items) {
-                    if (regexp.test(item.title)) {
+                    if (!item.disabled && regexp.test(item.title)) {
                         matched = true
                         break
                     }
