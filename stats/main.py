@@ -71,7 +71,7 @@ with open('report.txt', 'wb') as f:
 # now draw plots
 from matplotlib import pyplot as plt
 
-figsize = (32, 8) # plot size
+figsize = (40, 8) # plot size
 dpi = 200 # output image size
 
 outer_bg = "#d4e8c5"
@@ -89,9 +89,11 @@ season_sameness = 0.25 # from 0.0 to 1.0
 palette = [color((i // 2 + 1) - season_sameness * ((i // 2 + 1) % 3 - 1), i % 2) for i in range(12 * 2)]
 colors = [palette[int(wd == 6) + 2 * (d[1] - 1)] for wd, d in zip(full_w, full_d)]
 
+print('Rendering images 1/3...', flush=True)
 plt.figure(figsize=figsize)
 plt.axes().set_facecolor(inner_bg)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
+plt.margins(0.01)
 plt.axhline(1, color='gray', linestyle='--')
 plt.bar(full_d_str, full_k, width=0.9, color=colors)
 plt.xticks(full_d_str[::3], rotation=85)
@@ -100,9 +102,11 @@ plt.grid(axis='y', which='both')
 plt.savefig('bottle-collection-stat-2ka.png', dpi=dpi, bbox_inches='tight', facecolor=outer_bg)
 #plt.show()
 
+print('Rendering images 2/3...', flush=True)
 plt.figure(figsize=figsize)
 plt.axes().set_facecolor(inner_bg)
 plt.title('Даты выноса пластиковых бутылок в 2ке (крышечки собираются отдельно)')
+plt.margins(0.01)
 plt.axhline(4, color='gray', linestyle='--')
 plt.bar(full_d_str, full_a, width=0.9, color=colors)
 plt.xticks(sparse_dates_str, rotation=90)
@@ -112,6 +116,7 @@ plt.savefig('bottle-collection-days-2ka.png', dpi=dpi, bbox_inches='tight', face
 #plt.show()
 
 # smoothing experiments
+print('Rendering images 3/3...', flush=True)
 gamma = 0.9
 smooth_k = full_k[0]
 full_k_smooth = [smooth_k]
@@ -122,6 +127,7 @@ for k in full_k[1:]:
 plt.figure(figsize=figsize)
 plt.axes().set_facecolor(inner_bg)
 plt.title('Статистика сбора пластиковых бутылок в 2ке (крышечки собираются отдельно)')
+plt.margins(0.01)
 plt.axhline(0, color='k', linestyle='-')
 plt.axhline(1, color='gray', linestyle='--')
 plt.plot(full_d_str, full_k, label='Точное')
