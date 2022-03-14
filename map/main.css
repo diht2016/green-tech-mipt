@@ -69,3 +69,6 @@ ul {
     width: 0.75em;
     height: 1.23em;
 }
+.leaflet-default-icon-path {
+    background-image: url(https://unpkg.com/leaflet@1.6.0/dist/images/marker-icon.png);
+}
