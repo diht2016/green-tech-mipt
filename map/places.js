@@ -240,8 +240,12 @@ let places = [
         title: 'Батарейки',
         info: '2 этаж, у входа в столовую'
       },
+      {
+        title: 'Чеки',
+        info: '2 этаж, столовая'
+      },
     ],
-    type: 'orange',
+    type: 'blue-gray',
   },
   {
     id: 'nk',
@@ -312,8 +316,12 @@ let places = [
         title: 'Батарейки',
         info: '1 этаж, рядом с турникетами у главного входа'
       },
+      {
+        title: 'Чеки',
+        info: '-1 этаж, кафе Теория'
+      },
     ],
-    type: 'orange',
+    type: 'blue-gray',
   },
   {
     id: 'ulk2',
@@ -326,6 +334,18 @@ let places = [
       },
     ],
     type: 'orange',
+  },
+  {
+    id: 'gk',
+    name: 'ГК',
+    coords: [55.92945, 37.51795],
+    items: [
+      {
+        title: 'Чеки',
+        info: '224 ГК (профком обучающихся)'
+      },
+    ],
+    type: 'blue-gray',
   },
 
   // внешние пункты
